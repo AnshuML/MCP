@@ -58,6 +58,30 @@ async def favicon(request):
     return Response(status_code=204)
 
 
+class AcceptHeaderFixMiddleware:
+    """
+    Inject Accept: application/json for POST /mcp when client omits it.
+    MCP SDK returns 406 Not Acceptable otherwise.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        method = scope.get("method", "")
+        path = scope.get("path", "")
+        if method == "POST" and path.rstrip("/").endswith("/mcp"):
+            headers = [(k, v) for k, v in scope.get("headers", []) if k.lower() != b"accept"]
+            accept = next((v for k, v in scope.get("headers", []) if k.lower() == b"accept"), b"")
+            if b"application/json" not in accept.lower():
+                headers.append((b"accept", b"application/json"))
+                scope = {**scope, "headers": headers}
+        await self.app(scope, receive, send)
+
+
 def run() -> None:
     """Start the MCP server with configured transport."""
     if config.MCP_TRANSPORT == "streamable-http":
@@ -74,6 +98,8 @@ def run() -> None:
             allow_methods=["*"],
             allow_headers=["*"],
         )
+        # Fix 406: some clients omit Accept: application/json; MCP SDK requires it
+        app.add_middleware(AcceptHeaderFixMiddleware)
 
         async def _serve():
             config_uv = uvicorn.Config(

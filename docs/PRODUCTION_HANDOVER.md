@@ -62,6 +62,7 @@ Agar client "Could not connect" / "Could not load list" / errors dikhayi de, to 
 | **400 Bad Request / Missing session ID** | Session flow issue | Fixed – `stateless_http=True`. No action needed. |
 | **Could not connect (n8n / MCP Inspector)** | Network / URL | n8n Docker mein ho to `http://host.docker.internal:8000/mcp` use karein. K8s mein ho to service URL: `http://mcp-server-backend-service.<namespace>.svc.cluster.local:8000/mcp` |
 | **Tool list load nahi hota** | Connection fail | Pehle `curl http://<server>:8000/` se health check. Server reachable hona chahiye. |
+| **406 Not Acceptable** | Client Accept header missing/wrong | Client **must** send `Accept: application/json` (and `text/event-stream` for SSE mode). n8n / MCP Inspector usually send this – check client config. |
 
 ### Client URL Reference
 
