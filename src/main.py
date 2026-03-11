@@ -29,7 +29,7 @@ if _tokens:
 
 mcp = FastMCP(
     "Istedlal MCP Server",
-    json_response=True,
+    json_response=not config.MCP_HTTP_STREAMS_ENABLED,  # False = HTTP streams (SSE), True = single JSON
     stateless_http=True,  # No session ID needed - works better with MCP Inspector / proxy
     transport_security=_transport_security,
     auth=_auth,
@@ -77,7 +77,8 @@ class AcceptHeaderFixMiddleware:
             headers = [(k, v) for k, v in scope.get("headers", []) if k.lower() != b"accept"]
             accept = next((v for k, v in scope.get("headers", []) if k.lower() == b"accept"), b"")
             if b"application/json" not in accept.lower():
-                headers.append((b"accept", b"application/json"))
+                # JSON mode needs application/json; streams mode needs both - inject both to cover all
+                headers.append((b"accept", b"application/json, text/event-stream"))
                 scope = {**scope, "headers": headers}
         await self.app(scope, receive, send)
 

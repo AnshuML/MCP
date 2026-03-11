@@ -40,5 +40,10 @@ class Config:
     # Resource server URL for auth metadata (only used when MCP_BEARER_TOKEN is set)
     MCP_RESOURCE_SERVER_URL: str = os.getenv("MCP_RESOURCE_SERVER_URL", "https://localhost:8000/mcp")
 
+    # HTTP streams mode: when True, connection stays open, data sent in chunks (SSE).
+    # When False, single JSON response per request (default, simpler).
+    # Deployment may require streams for large data / real-time updates.
+    MCP_HTTP_STREAMS_ENABLED: bool = os.getenv("MCP_HTTP_STREAMS_ENABLED", "false").lower() == "true"
+
 
 config = Config()

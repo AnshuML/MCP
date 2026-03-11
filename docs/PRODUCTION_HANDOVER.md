@@ -11,6 +11,7 @@
 | Variable | Required | Example |
 |----------|----------|---------|
 | `MCP_TRANSPORT` | Yes | `streamable-http` |
+| `MCP_HTTP_STREAMS_ENABLED` | No | `true` to enable HTTP streams (connection open, chunked data). Default `false`. |
 | `MCP_BEARER_TOKEN` | **Yes** | `token1,token2,token3` (comma-separated; any one grants access) |
 | `VECTOR_PROVIDER` | No | `mock` \| `pgvector` \| `chromadb` (default: mock) |
 | `DATABASE_URL` | If VECTOR_PROVIDER=pgvector | `postgresql://user:pass@host:5432/dbname` |
@@ -20,6 +21,16 @@
 | `LOG_LEVEL` | No | `INFO` |
 
 **Important:** `MCP_BEARER_TOKEN` must be set in production. Use strong, unique tokens. No quotes in `.env` – write `100` not `"100"`.
+
+### HTTP Streams Mode (Deployment Team Request)
+
+When `MCP_HTTP_STREAMS_ENABLED=true`:
+- HTTP connection **stays open** instead of closing after each response
+- Data is sent in **small chunks** over time (Server-Sent Events)
+- Better for large data, real-time updates, long-running tasks
+- Reduces memory usage on client and server
+
+Set in `.env`: `MCP_HTTP_STREAMS_ENABLED=true`
 
 ---
 
