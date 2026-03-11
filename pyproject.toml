@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "istedlal-mcp-server"
+version = "0.1.0"
+description = "MCP Server for Istedlal AI Agents - file metadata, vector store, workflow metrics"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+istedlal-mcp = "src.main:run"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

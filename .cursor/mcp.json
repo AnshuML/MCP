@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "istedlal-mcp": {
+      "command": "c:\\Users\\anshu\\OneDrive\\Desktop\\mcp\\venv\\python.exe",
+      "args": ["-m", "src.main"],
+      "cwd": "c:\\Users\\anshu\\OneDrive\\Desktop\\mcp",
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}

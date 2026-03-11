@@ -1,0 +1,16 @@
+venv/
+.env
+.git/
+.cursor/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+data/
+docs/
+scripts/
+tests/
+infra/
+*.md
+.gitignore

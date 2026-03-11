@@ -1,0 +1,1 @@
+"""Istedlal MCP Server."""

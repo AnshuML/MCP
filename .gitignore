@@ -1,0 +1,16 @@
+# Environment (contains secrets - do not commit)
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
