@@ -31,8 +31,8 @@ def _get_connection():
         from pgvector.psycopg2 import register_vector
 
         conn = psycopg2.connect(config.DATABASE_URL)
+        conn.autocommit = True  # Must be outside transaction for register_vector
         register_vector(conn)
-        conn.autocommit = False
         _conn = conn
         return conn
     except Exception as e:
