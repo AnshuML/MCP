@@ -37,9 +37,9 @@ python -m src.main
 
 ## Tools
 
-- `get_file_metadata` - Fetch metadata for a file by ID
-- `search_files` - Search files by metadata filters
-- `semantic_search_files` - **Phase 2** - Semantic search over file embeddings (pgvector)
+- `get_file_metadata` - Fetch metadata for a file by ID (real DB when VECTOR_PROVIDER=pgvector)
+- `search_files` - Search files by metadata filters (real DB when pgvector)
+- `semantic_search_files` - Semantic search over file embeddings (Ollama + pgvector)
 
 ## Testing with MCP Inspector
 
@@ -61,7 +61,8 @@ npx -y @modelcontextprotocol/inspector
 | .dockerignore | Yes | Exclude venv, .env, __pycache__ |
 | Production .env | Yes | Set on server (never commit) |
 | Port 8000 | Yes | Expose for MCP endpoint |
-| PostgreSQL | Optional | For real pgvector (Phase 2) |
+| PostgreSQL + pgvector | Phase 2 | document_metadata, document_embeddings (see data/vectordb_schema_documentation.pdf) |
+| Ollama | Phase 2 | For semantic search query embeddings |
 
 ### What to Exclude from Deployment
 
@@ -78,7 +79,11 @@ MCP_TRANSPORT=streamable-http
 HTTP_HOST=0.0.0.0
 HTTP_PORT=8000
 DATABASE_URL=postgresql://user:password@db-host:5432/dbname
-PGVECTOR_ENABLED=true
+VECTOR_PROVIDER=pgvector   # mock | pgvector | chromadb
+OLLAMA_URL=https://your-ollama:11433
+OLLAMA_EMBEDDING_MODEL=llama3.2
+OLLAMA_USERNAME=   # if Basic Auth required
+OLLAMA_PASSWORD=
 LOG_LEVEL=INFO
 MCP_BEARER_TOKEN=your-secret-token   # Required – Bearer token auth for /mcp
 ```

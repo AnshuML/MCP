@@ -69,5 +69,10 @@ PGVECTOR_ENABLED=true
 | MCP_BEARER_TOKEN | **Yes (Production)** | Comma-separated tokens; any valid token grants access | token1,token2,token3 |
 | MCP_RESOURCE_SERVER_URL | No | Public MCP URL for auth metadata (when using Bearer token) | https://mcp.example.com/mcp |
 | MCP_HTTP_STREAMS_ENABLED | No | `true` = HTTP streams (connection open, chunked data). Default `false`. | false |
+| OLLAMA_URL | Phase 2 | Ollama base URL for embeddings (e.g. https://gpu1.oginnovation.com:11433) | (empty) |
+| OLLAMA_EMBEDDING_MODEL | Phase 2 | Model name (must match DB embedding dim) | llama3.2 |
+| OLLAMA_USERNAME | Phase 2 | Basic Auth username (if required) | (empty) |
+| OLLAMA_PASSWORD | Phase 2 | Basic Auth password | (empty) |
+| EMBEDDING_DIM | Phase 2 | Vector dimension (3072 for llama3.2) | 3072 |
 
 \* For semantic search with real DB; otherwise mock data is used.

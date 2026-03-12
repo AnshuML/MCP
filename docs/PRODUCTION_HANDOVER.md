@@ -16,6 +16,9 @@
 | `VECTOR_PROVIDER` | No | `mock` \| `pgvector` \| `chromadb` (default: mock) |
 | `DATABASE_URL` | If VECTOR_PROVIDER=pgvector | `postgresql://user:pass@host:5432/dbname` |
 | `PGVECTOR_ENABLED` | No | `true` when using pgvector |
+| `OLLAMA_URL` | If semantic search | Ollama base URL (e.g. https://gpu1.oginnovation.com:11433) |
+| `OLLAMA_EMBEDDING_MODEL` | No | llama3.2 (must match DB) |
+| `OLLAMA_USERNAME` / `OLLAMA_PASSWORD` | If auth | Basic Auth for Ollama |
 | `HTTP_HOST` | No | `0.0.0.0` |
 | `HTTP_PORT` | No | `8000` |
 | `LOG_LEVEL` | No | `INFO` |
@@ -83,6 +86,20 @@ Agar client "Could not connect" / "Could not load list" / errors dikhayi de, to 
 | n8n in Docker | `http://host.docker.internal:8000/mcp` |
 | K8s – same namespace | `http://mcp-server-backend-service:8000/mcp` |
 | K8s – different namespace | `http://mcp-server-backend-service.<namespace>.svc.cluster.local:8000/mcp` |
+
+---
+
+## Phase 2 – Real DB Integration
+
+**Schema (Agent Swarm V2):** `document_metadata`, `document_embeddings` in PostgreSQL + pgvector.
+
+**To enable:**
+1. Set `VECTOR_PROVIDER=pgvector`
+2. Set `DATABASE_URL` to reachable PostgreSQL
+3. Set `OLLAMA_URL` for semantic search (query embeddings)
+4. Tables must exist: `document_metadata`, `document_embeddings` (see `data/vectordb_schema_documentation.pdf`)
+
+**Tenant isolation:** All queries filter by `tenant_id`. No `project_id` in schema.
 
 ---
 

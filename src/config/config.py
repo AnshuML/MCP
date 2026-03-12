@@ -45,5 +45,14 @@ class Config:
     # Deployment may require streams for large data / real-time updates.
     MCP_HTTP_STREAMS_ENABLED: bool = os.getenv("MCP_HTTP_STREAMS_ENABLED", "false").lower() == "true"
 
+    # Ollama embedding API (Phase 2 - semantic search)
+    # Base URL without trailing slash, e.g. https://gpu1.oginnovation.com:11433
+    OLLAMA_URL: str = os.getenv("OLLAMA_URL", "").rstrip("/")
+    OLLAMA_EMBEDDING_MODEL: str = os.getenv("OLLAMA_EMBEDDING_MODEL", "llama3.2")
+    OLLAMA_USERNAME: str = os.getenv("OLLAMA_USERNAME", "")
+    OLLAMA_PASSWORD: str = os.getenv("OLLAMA_PASSWORD", "")
+    EMBEDDING_DIM: int = int(os.getenv("EMBEDDING_DIM", "3072"))
+    OLLAMA_TIMEOUT_SEC: int = int(os.getenv("OLLAMA_TIMEOUT_SEC", "30"))
+
 
 config = Config()

@@ -1,40 +1,43 @@
-"""PgVector provider for semantic search over file embeddings.
+"""PgVector provider for semantic search over document_embeddings.
 
-Requires: PostgreSQL + pgvector extension. Falls back to mock on error.
+Schema: document_embeddings (chunk_id, document_id, tenant_id, content, embedding vector(3072)).
+Uses Ollama for query embeddings. Tenant-isolated.
 """
+import logging
 from typing import Any
 
 from src.config import config
+from src.embedding.ollama_client import get_query_embedding
 
 from .mock_provider import semantic_search_mock
 
-# Lazy imports for optional deps
+logger = logging.getLogger(__name__)
+
 _conn = None
 
 
 def _get_connection():
-    """Get PostgreSQL connection (lazy init). Returns None if pgvector unavailable."""
+    """Get PostgreSQL connection with pgvector. Returns None if unavailable."""
     global _conn
     if _conn is not None:
-        return _conn
+        try:
+            _conn.rollback()
+            _conn.cursor().execute("SELECT 1")
+            return _conn
+        except Exception:
+            _conn = None
     try:
         import psycopg2
         from pgvector.psycopg2 import register_vector
 
         conn = psycopg2.connect(config.DATABASE_URL)
         register_vector(conn)
+        conn.autocommit = False
         _conn = conn
         return conn
-    except Exception:
+    except Exception as e:
+        logger.exception("pgvector connection failed: %s", e)
         return None
-
-
-def _embed_query(query: str) -> list[float]:
-    """
-    Convert query to embedding vector.
-    Mock: returns placeholder. Real: use sentence-transformers or OpenAI.
-    """
-    return [0.0] * 384  # Placeholder for 384-dim (e.g. all-MiniLM-L6-v2)
 
 
 def _semantic_search_pgvector(
@@ -43,51 +46,77 @@ def _semantic_search_pgvector(
     project_id: str,
     top_k: int = 10,
     file_ids: list[str] | None = None,
+    threshold: float | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Real pgvector semantic search.
-    Expects: chunks (chunk_id, file_id, content_text, page_number, embedding vector(384)), files (tenant_id, project_id).
+    Semantic search over document_embeddings.
+    Schema: chunk_id, document_id, tenant_id, content, embedding vector(3072), metadata.
     """
+    embedding = get_query_embedding(query)
+    if embedding is None:
+        logger.warning("Embedding unavailable, falling back to mock")
+        return semantic_search_mock(query, tenant_id, project_id, top_k)
+
     conn = _get_connection()
     if conn is None:
-        return []
+        return semantic_search_mock(query, tenant_id, project_id, top_k)
 
     try:
-        embedding = _embed_query(query)
+        # pgvector accepts vector as string "[x,y,z,...]" for ::vector cast
+        embedding_str = "[" + ",".join(str(float(x)) for x in embedding) + "]"
         cur = conn.cursor()
         sql = """
-            SELECT c.chunk_id, c.file_id, c.content_text, c.page_number,
-                   1 - (c.embedding <=> %s::vector) as similarity
-            FROM chunks c
-            JOIN files f ON f.file_id = c.file_id
-            WHERE f.tenant_id = %s AND f.project_id = %s
+            SELECT e.chunk_id, e.document_id, e.content, e.metadata,
+                   1 - (e.embedding <=> %s::vector) AS similarity
+            FROM document_embeddings e
+            WHERE e.tenant_id = %s
         """
-        params: list[Any] = [embedding, tenant_id, project_id]
+        params: list[Any] = [embedding_str, tenant_id]
+
         if file_ids:
-            sql += " AND c.file_id = ANY(%s)"
+            sql += " AND e.document_id = ANY(%s)"
             params.append(file_ids)
-        sql += " ORDER BY c.embedding <=> %s::vector LIMIT %s"
-        params.extend([embedding, top_k])
+
+        sql += " ORDER BY e.embedding <=> %s::vector LIMIT %s"
+        params.extend([embedding_str, top_k * 2])  # fetch extra for threshold filter
+
         cur.execute(sql, params)
         rows = cur.fetchall()
         cur.close()
-        return [
-            {
-                "chunk_id": r[0],
-                "file_id": r[1],
-                "content": r[2],
-                "page_number": r[3],
-                "score": float(r[4]),
-                "provenance": {"file_id": r[1], "chunk_id": r[0], "page": r[3]},
-            }
-            for r in rows
-        ]
-    except Exception:
-        return []
+
+        results = []
+        for r in rows:
+            chunk_id, document_id, content, meta, score = r
+            if threshold is not None and score < threshold:
+                continue
+            if len(results) >= top_k:
+                break
+            meta = meta or {}
+            page = meta.get("chunk_index", 0) + 1 if isinstance(meta.get("chunk_index"), int) else 1
+            results.append({
+                "chunk_id": chunk_id,
+                "file_id": document_id,
+                "content": content or "",
+                "page_number": page,
+                "score": float(score),
+                "provenance": {
+                    "file_id": document_id,
+                    "chunk_id": chunk_id,
+                    "page": page,
+                    "file_name": meta.get("file_name"),
+                },
+            })
+        return results
+
+    except Exception as e:
+        logger.exception("semantic_search failed: %s", e)
+        if conn:
+            conn.rollback()
+        return semantic_search_mock(query, tenant_id, project_id, top_k)
 
 
 class PgVectorProvider:
-    """Provider for pgvector semantic search. Falls back to mock if pgvector unavailable."""
+    """Provider for pgvector semantic search. Falls back to mock on error."""
 
     def semantic_search(
         self,
@@ -99,10 +128,8 @@ class PgVectorProvider:
         threshold: float | None = None,
     ) -> list[dict[str, Any]]:
         results = _semantic_search_pgvector(
-            query, tenant_id, project_id, top_k, file_ids
+            query, tenant_id, project_id, top_k, file_ids, threshold
         )
-        if not results:
-            results = semantic_search_mock(query, tenant_id, project_id, top_k)
-        if threshold is not None:
+        if threshold is not None and results:
             results = [r for r in results if r.get("score", 0) >= threshold]
-        return results
+        return results[:top_k]
