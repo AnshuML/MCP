@@ -15,3 +15,5 @@ pgvector>=0.2.4
 
 # Utilities
 pydantic>=2.0.0
+PyYAML>=6.0
+requests>=2.28.0

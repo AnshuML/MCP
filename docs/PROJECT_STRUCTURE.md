@@ -175,8 +175,6 @@
 | **PRODUCTION_HANDOVER.md** | Deployment team ke liye checklist |
 | **MCP_INSPECTOR_GUIDE.md** | MCP Inspector se test karne ka guide |
 | **POSTGRES_LOCAL_SETUP.md** | Local PostgreSQL setup |
-| **PROGRESS_REPORT_2025-03-08.md** | Phase 1 progress |
-| **DAILY_SUMMARY_2025-03-10.md** | 10 March ka summary |
 
 ---
 

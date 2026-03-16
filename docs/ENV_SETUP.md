@@ -74,5 +74,21 @@ PGVECTOR_ENABLED=true
 | OLLAMA_USERNAME | Phase 2 | Basic Auth username (if required) | (empty) |
 | OLLAMA_PASSWORD | Phase 2 | Basic Auth password | (empty) |
 | EMBEDDING_DIM | Phase 2 | Vector dimension (3072 for llama3.2) | 3072 |
+| **External APIs (Phase 3)** | | | |
+| APIS_CONFIG_PATH | No | Path to `apis.yaml` (default: `config/apis.yaml`) | /app/config/apis.yaml |
+| DOCCONTEXT_API_URL | If using doccontext | Base URL of DocContext API | http://doccontext.svc:85 |
+| DOCCONTEXT_API_TOKEN | If auth=bearer | Bearer token for DocContext (env name in apis.yaml) | (optional) |
 
 \* For semantic search with real DB; otherwise mock data is used.
+
+---
+
+## External APIs (Phase 3)
+
+New external APIs are added **only via config** – no code change.
+
+1. **Config:** Edit `config/apis.yaml` – add an entry under `apis:` with `id`, `base_url_env`, `auth`, `timeout_sec`, and `endpoints` (each with `path`, `method`, `tool_name`, `description`, `params`).
+2. **Credentials:** In `.env`, set the env var named in `base_url_env` (e.g. `DOCCONTEXT_API_URL=...`). If the API uses `auth: bearer` or `auth: api_key`, set the var in `auth_env` (e.g. `DOCCONTEXT_API_TOKEN=...`).
+3. Restart the MCP server. New tools appear automatically.
+
+APIs whose base URL env is unset are skipped at startup (no error). See `config/apis.yaml` comments for auth options and examples.

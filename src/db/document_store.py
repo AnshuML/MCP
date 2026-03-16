@@ -109,7 +109,7 @@ class PgDocumentStore:
             self._conn.autocommit = False
             return self._conn
         except Exception as e:
-            logger.exception("DB connection failed: %s", e)
+            logger.warning("DB connection failed: %s", e)
             return None
 
     def get_file_metadata(

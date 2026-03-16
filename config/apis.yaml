@@ -1,0 +1,62 @@
+# External APIs exposed as MCP tools (Phase 3)
+# Add new APIs here only - no code changes needed.
+# Credentials: set base URL and auth in .env (see env var names below).
+
+apis:
+  - id: doccontext
+    # Base URL from env - e.g. DOCCONTEXT_API_URL=http://doccontext.ogbrain-dev-apps-doccontext.svc.cluster.local:85
+    base_url_env: DOCCONTEXT_API_URL
+    auth: none
+    timeout_sec: 30
+    endpoints:
+      - path: /register_file_upload
+        method: POST
+        tool_name: register_file_upload
+        description: Register a file upload.
+        params: [file_id, tenant_id, project_id]
+      - path: /promote_document_scope
+        method: POST
+        tool_name: promote_document_scope
+        description: Promote document scope.
+        params: [document_id, tenant_id, scope]
+      - path: /list_session_documents
+        method: GET
+        tool_name: list_session_documents
+        description: List documents for a session.
+        params: [session_id, tenant_id]
+      - path: /search_documents
+        method: POST
+        tool_name: search_documents
+        description: Search documents.
+        params: [query, tenant_id, limit]
+      - path: /get_file_summary
+        method: GET
+        tool_name: get_file_summary
+        description: Get summary for a file.
+        params: [file_id, tenant_id]
+      - path: /get_file_chunks
+        method: GET
+        tool_name: get_file_chunks
+        description: Get chunks of a file.
+        params: [file_id, tenant_id, offset, limit]
+      - path: /get_file_workflow_status
+        method: GET
+        tool_name: get_file_workflow_status
+        description: Get workflow status for a file.
+        params: [file_id, tenant_id]
+
+  # Fake/test API for verification - set TEST_ECHO_API_URL=https://httpbin.org in .env
+  - id: test_echo
+    base_url_env: TEST_ECHO_API_URL
+    auth: none
+    timeout_sec: 15
+    endpoints:
+      - path: /get
+        method: GET
+        tool_name: test_echo_get
+        description: Test GET (echo) - for verifying external API flow.
+        params: [test_key]
+
+# To add another API - copy a block above and change id, base_url_env, auth, endpoints.
+# Auth options: none | bearer | api_key
+# If bearer/api_key, set auth_env to env var name (e.g. DOCCONTEXT_API_TOKEN).

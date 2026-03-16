@@ -103,6 +103,18 @@ Agar client "Could not connect" / "Could not load list" / errors dikhayi de, to 
 
 ---
 
+## Phase 3 – External APIs (Config-Only)
+
+External APIs are exposed as MCP tools **without code changes**.
+
+- **Config:** `config/apis.yaml` – add new API blocks with `base_url_env`, `auth`, `endpoints` (path, method, tool_name, params).
+- **Credentials:** In `.env` set the env vars referenced in config (e.g. `DOCCONTEXT_API_URL`, optional `DOCCONTEXT_API_TOKEN`).
+- APIs whose base URL env is not set are skipped at startup. Restart server after config/env changes.
+
+See `docs/ENV_SETUP.md` → External APIs (Phase 3) and `config/apis.yaml` comments.
+
+---
+
 ## Reference Docs
 
 - `docs/ENV_SETUP.md` – Full env variable details

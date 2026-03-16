@@ -58,7 +58,11 @@ Yeh command:
    ```
    http://127.0.0.1:8000/mcp
    ```
-4. **Connect** par click karein
+4. **Bearer token (agar `.env` mein `MCP_BEARER_TOKEN` set hai):**  
+   Inspector mein **Headers** / **Auth** section mein add karein:  
+   - Header name: `Authorization`  
+   - Value: `Bearer <apna-token>` (token wahi jo `.env` ke `MCP_BEARER_TOKEN` mein hai)
+5. **Connect** par click karein
 
 ### Option B: Direct Python Server (Inspector Server Start Karega)
 
@@ -77,7 +81,9 @@ npx -y @modelcontextprotocol/inspector uv --directory c:\Users\anshu\OneDrive\De
 Connect hone ke baad:
 
 1. **Tools** tab pe jayein
-2. Wahan **get_file_metadata** aur **search_files** tools dikhenge
+2. Wahan ye tools dikhenge:
+   - **get_file_metadata**, **search_files**, **semantic_search_files** (built-in)
+   - Agar `DOCCONTEXT_API_URL` set hai to Phase 3 external tools bhi (e.g. register_file_upload, search_documents, …)
 
 ---
 
@@ -138,7 +144,10 @@ npx -y @modelcontextprotocol/inspector@latest
 | 1. Start server   | `python -m src.main`                          |
 | 2. Start Inspector| `npx -y @modelcontextprotocol/inspector`      |
 | 3. Connect URL    | `http://localhost:8000/mcp`                   |
-| 4. Test tool      | Tools tab → get_file_metadata / search_files  |
+| 4. Auth (if used) | Header: `Authorization: Bearer <token>`       |
+| 5. Test tool      | Tools tab → get_file_metadata / search_files / semantic_search_files |
+
+**n8n se check karne ke liye:** [MCP_INSPECTOR_AND_N8N_CHECKLIST.md](MCP_INSPECTOR_AND_N8N_CHECKLIST.md) – dono Inspector aur n8n ka short checklist.
 
 ---
 

@@ -8,6 +8,7 @@ from pydantic import AnyHttpUrl
 
 from src.auth import StaticBearerTokenVerifier
 from src.config import config
+from src.external_api import register_external_api_tools
 from src.tools import register_tools
 
 # Transport security: allow all hosts, rely on Bearer token for auth
@@ -36,8 +37,10 @@ mcp = FastMCP(
     token_verifier=_token_verifier,
 )
 
-# Register all tools
+# Register built-in tools
 register_tools(mcp)
+# Register external API tools from config/apis.yaml (Phase 3 - no code change to add APIs)
+register_external_api_tools(mcp)
 
 
 @mcp.custom_route("/", methods=["GET"])

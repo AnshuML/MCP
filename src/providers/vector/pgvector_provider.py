@@ -36,7 +36,7 @@ def _get_connection():
         _conn = conn
         return conn
     except Exception as e:
-        logger.exception("pgvector connection failed: %s", e)
+        logger.warning("pgvector connection failed: %s", e)
         return None
 
 
